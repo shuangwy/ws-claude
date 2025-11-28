@@ -54,3 +54,15 @@ async function authenticate({ username, password, baseUrl }) {
 }
 
 module.exports = { authenticate };
+
+async function ping({ baseUrl }) {
+  const url = `${baseUrl.replace(/\/$/, '')}/auth/ping`;
+  try {
+    const resp = await axios.get(url, { timeout: 3000 });
+    return !!(resp && resp.data && (resp.data.ok === true || resp.status === 200));
+  } catch (_) {
+    return false;
+  }
+}
+
+module.exports.ping = ping;

@@ -9,6 +9,7 @@
   "scripts": {
     "test": "node test/test-launcher.js",
     "test:server": "node mock/mock-server.js",
+    "start:mock": "node mock/mock-server.js",
     "prepublishOnly": "npm test"
   },
   "keywords": [

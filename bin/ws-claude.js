@@ -4,7 +4,7 @@ const os = require('os');
 const chalk = require('chalk');
 const prompts = require('prompts');
 
-const { authenticate } = require('../src/auth');
+const { authenticate, ping } = require('../src/auth');
 const { runClaude } = require('../src/runner');
 
 (async () => {
@@ -14,8 +14,13 @@ const { runClaude } = require('../src/runner');
         const forceAuth = args.includes('--force-auth');
         const authUrl = process.env.WS_CLAUDE_AUTH_URL || 'http://localhost:4545';
 
-        if (!process.env.WS_CLAUDE_TOKEN || forceAuth) {
-            const username = os.userInfo().username;
+    if (!process.env.WS_CLAUDE_TOKEN || forceAuth) {
+      console.log(chalk.gray(`使用认证服务: ${authUrl}`));
+      const alive = await ping({ baseUrl: authUrl });
+      if (!alive) {
+        console.log(chalk.yellow('认证服务不可用，继续尝试登录以获得更详细的错误信息'));
+      }
+      const username = os.userInfo().username;
 
             let password = process.env.WS_CLAUDE_PASSWORD;
             if (!password) {
@@ -39,7 +44,7 @@ const { runClaude } = require('../src/runner');
             }
 
             process.env.WS_CLAUDE_TOKEN = token;
-            console.log(chalk.green('认证成功，令牌已写入进程环境'));
+      console.log(chalk.green('认证成功，令牌已写入进程环境'));
         } else {
             console.log(chalk.gray('检测到现有令牌，跳过认证（使用 --force-auth 重新认证）'));
         }
@@ -51,4 +56,3 @@ const { runClaude } = require('../src/runner');
         process.exit(1);
     }
 })();
-

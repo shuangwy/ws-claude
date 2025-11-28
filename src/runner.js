@@ -26,9 +26,11 @@ async function runClaude(args, { env }) {
     }
   }
 
-  const cmd = 'npx';
-  const npxArgs = ['-y', '@anthropic-ai/claude-code'].concat(['--']).concat(args);
+  const isWin = process.platform === 'win32';
+  const cmd = isWin ? 'npx.cmd' : 'npx';
+  const npxArgs = ['-y', '@anthropic-ai/claude-code'].concat(args);
   await new Promise((resolve, reject) => {
+    console.log(chalk.gray(`调用命令: ${cmd} ${npxArgs.join(' ')}`));
     const child = spawn(cmd, npxArgs, { stdio: 'inherit', env });
     child.on('exit', (code) => {
       if (code === 0) resolve();
@@ -39,4 +41,3 @@ async function runClaude(args, { env }) {
 }
 
 module.exports = { runClaude };
-
