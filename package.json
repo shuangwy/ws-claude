@@ -24,12 +24,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/ws-claude.git"
+    "url": "https://github.com/shuangwy/ws-claude.git"
   },
   "bugs": {
     "url": "https://github.com/yourusername/ws-claude/issues"
   },
-  "homepage": "https://github.com/yourusername/ws-claude#readme",
+  "homepage": "https://github.com/shuangwy/ws-claude#readme",
   "files": [
     "bin/",
     "src/",
