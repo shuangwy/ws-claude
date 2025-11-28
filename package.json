@@ -1,0 +1,56 @@
+{
+  "name": "ws-claude",
+  "version": "1.0.0",
+  "description": "A secure wrapper for Claude Code with HTTP authentication",
+  "main": "index.js",
+  "bin": {
+    "ws-claude": "./bin/ws-claude.js"
+  },
+  "scripts": {
+    "test": "node test/test-launcher.js",
+    "test:server": "node mock/mock-server.js",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "claude",
+    "ai",
+    "anthropic",
+    "authentication",
+    "wrapper",
+    "claude-code",
+    "cli"
+  ],
+  "author": "Wystan Wang<572644539@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ws-claude.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/ws-claude/issues"
+  },
+  "homepage": "https://github.com/yourusername/ws-claude#readme",
+  "files": [
+    "bin/",
+    "src/",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chalk": "^4.1.2",
+    "prompts": "^2.4.2"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/claude-code": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/claude-code": {
+      "optional": true
+    }
+  }
+}
