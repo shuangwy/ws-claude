@@ -56,5 +56,12 @@ echo   "companyAnnouncements": [ "That's one small step for Clauding, one GIANT 
 echo }
 ) > "%SETTINGS_FILE%"
 
+rem create token file under the real user's profile
+set TARGET_PROFILE=
+for /f "delims=" %%P in ('powershell -NoProfile -Command "$u='%REAL_USER%';$acct=Get-WmiObject Win32_UserAccount -Filter \"Name=''$u''\"; if($acct){$sid=$acct.SID; $prof=Get-WmiObject Win32_UserProfile | Where-Object {$_.SID -eq $sid}; if($prof){$prof.LocalPath}}"') do set TARGET_PROFILE=%%P
+if not defined TARGET_PROFILE set TARGET_PROFILE=C:\Users\%REAL_USER%
+if not exist "%TARGET_PROFILE%\.claude" mkdir "%TARGET_PROFILE%\.claude"
+if not exist "%TARGET_PROFILE%\.claude\token.txt" type nul > "%TARGET_PROFILE%\.claude\token.txt"
+
 echo Done. Run: ws-claude --verbose
 endlocal

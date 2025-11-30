@@ -57,4 +57,12 @@ tee "$SETTINGS_FILE" >/dev/null <<JSON
 }
 JSON
 
+# create token file in the target user's home
+CURRENT_HOME=$(eval echo "~$CURRENT_USER")
+CLAUDE_DIR="$CURRENT_HOME/.claude"
+mkdir -p "$CLAUDE_DIR"
+if [ ! -f "$CLAUDE_DIR/token.txt" ]; then
+  : > "$CLAUDE_DIR/token.txt"
+fi
+
 echo "Done. Run: ws-claude --verbose"
