@@ -4,21 +4,23 @@ set ROOT=%~dp0..
 set PKG=%ROOT%\ws-claude-1.0.0.tgz
 set CLAUDE=%ROOT%\anthropic-ai-claude-code-2.0.55.tgz
 
-echo Installing ws-claude...
+echo [STEP] 1/3 Installing ws-claude
 if exist "%PKG%" (
   npm i -g "%PKG%"
 ) else (
   npm i -g ws-claude
 )
+if errorlevel 1 echo [WARN] install ws-claude failed
 
 if exist "%CLAUDE%" (
-  echo Installing local claude-code...
+  echo Installing local claude-code package
   ws-claude --install-local "%CLAUDE%"
+  if errorlevel 1 echo [WARN] install local claude-code failed
 )
 
 set SETTINGS_DIR=%ProgramData%\ClaudeCode
 set SETTINGS_FILE=%SETTINGS_DIR%\managed-settings.json
-echo Configuring managed settings at: %SETTINGS_FILE%
+echo [STEP] 2/3 Writing managed settings: %SETTINGS_FILE%
 mkdir "%SETTINGS_DIR%" 2>nul
 
 set REAL_USER=
@@ -28,7 +30,7 @@ if not defined REAL_USER set REAL_USER=%USERNAME%
 for /f "tokens=2 delims=\" %%x in ("%REAL_USER%") do set REAL_USER=%%x
 (
 echo {
-echo   "apiKeyHelper": "echo | cat ~/.claude/token.txt",
+echo   "apiKeyHelper": "type %%USERPROFILE%%\\.claude\\token.txt",
 echo   "env": {
 echo     "ANTHROPIC_BASE_URL": "https://genai-erg-infer.sp.uat.dbs.corp/devai_v3/genai-infer/api/dev/ai/claude",
 echo     "DISABLE_PROMPT_CACHING": 1,
@@ -55,13 +57,23 @@ echo   "alwaysThinkingEnabled": false,
 echo   "companyAnnouncements": [ "That's one small step for Clauding, one GIANT leap for our team's productivity!" ]
 echo }
 ) > "%SETTINGS_FILE%"
+if exist "%SETTINGS_FILE%" (
+  echo [OK] managed-settings.json created
+) else (
+  echo [WARN] managed-settings.json missing
+)
 
-rem create token file under the real user's profile
+echo [STEP] 3/3 Ensuring token file
 set TARGET_PROFILE=
 for /f "delims=" %%P in ('powershell -NoProfile -Command "$u='%REAL_USER%';$acct=Get-WmiObject Win32_UserAccount -Filter \"Name=''$u''\"; if($acct){$sid=$acct.SID; $prof=Get-WmiObject Win32_UserProfile | Where-Object {$_.SID -eq $sid}; if($prof){$prof.LocalPath}}"') do set TARGET_PROFILE=%%P
 if not defined TARGET_PROFILE set TARGET_PROFILE=C:\Users\%REAL_USER%
 if not exist "%TARGET_PROFILE%\.claude" mkdir "%TARGET_PROFILE%\.claude"
 if not exist "%TARGET_PROFILE%\.claude\token.txt" type nul > "%TARGET_PROFILE%\.claude\token.txt"
+if exist "%TARGET_PROFILE%\.claude\token.txt" (
+  echo [OK] token.txt ready at %TARGET_PROFILE%\.claude\token.txt
+) else (
+  echo [WARN] failed to create token.txt
+)
 
-echo Done. Run: ws-claude --verbose
+echo [DONE] Installation completed. Run: ws-claude --verbose
 endlocal

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-set -e
+set +e
 ROOT="$(cd "$(dirname "$0")"/.. && pwd)"
 PKG="$ROOT/ws-claude-1.0.0.tgz"
 CLAUDE="$ROOT/anthropic-ai-claude-code-2.0.55.tgz"
 
-echo "Installing ws-claude..."
+echo "[STEP] 1/3 Installing ws-claude"
 if [ -f "$PKG" ]; then
   npm i -g "$PKG"
 else
@@ -12,8 +12,8 @@ else
 fi
 
 if [ -f "$CLAUDE" ]; then
-  echo "Installing local claude-code..."
-  ws-claude --install-local "$CLAUDE"
+  echo "Installing local claude-code package"
+  ws-claude --install-local "$CLAUDE" || echo "[WARN] install local claude-code failed"
 fi
 
 SETTINGS_DIR="/Library/Application Support/ClaudeCode"
@@ -23,7 +23,7 @@ if [ -z "$CURRENT_USER" ] || [ "$CURRENT_USER" = "root" ]; then
   CURRENT_USER="$([ -x /usr/bin/logname ] && /usr/bin/logname 2>/dev/null || echo "$USER")"
 fi
 HOST_NAME="$([ -x /bin/hostname ] && /bin/hostname 2>/dev/null || hostname)"
-echo "Configuring managed settings at: $SETTINGS_FILE"
+echo "[STEP] 2/3 Writing managed settings: $SETTINGS_FILE"
 mkdir -p "$SETTINGS_DIR"
 tee "$SETTINGS_FILE" >/dev/null <<JSON
 {
@@ -57,12 +57,24 @@ tee "$SETTINGS_FILE" >/dev/null <<JSON
 }
 JSON
 
-# create token file in the target user's home
+echo "[INFO] managed-settings.json write finished"
+if [ -f "$SETTINGS_FILE" ]; then
+  echo "[OK] managed-settings.json created"
+else
+  echo "[WARN] managed-settings.json missing"
+fi
+
+echo "[STEP] 3/3 Ensuring token file"
 CURRENT_HOME=$(eval echo "~$CURRENT_USER")
 CLAUDE_DIR="$CURRENT_HOME/.claude"
 mkdir -p "$CLAUDE_DIR"
 if [ ! -f "$CLAUDE_DIR/token.txt" ]; then
   : > "$CLAUDE_DIR/token.txt"
 fi
+if [ -f "$CLAUDE_DIR/token.txt" ]; then
+  echo "[OK] token.txt ready at $CLAUDE_DIR/token.txt"
+else
+  echo "[WARN] failed to create token.txt"
+fi
 
-echo "Done. Run: ws-claude --verbose"
+echo "[DONE] Installation completed. Run: ws-claude --verbose"
