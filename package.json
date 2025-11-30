@@ -33,9 +33,7 @@
   "files": [
     "bin/",
     "src/",
-    "index.js",
-    "README.md",
-    "LICENSE"
+    "index.js"
   ],
   "engines": {
     "node": ">=14.0.0"
@@ -46,11 +44,6 @@
     "prompts": "^2.4.2",
     "@anthropic-ai/claude-code": "2.0.55"
   },
-  "bundledDependencies": [
-    "axios",
-    "chalk",
-    "prompts",
-    "@anthropic-ai/claude-code"
-  ],
+  "bundledDependencies": [],
   "optionalDependencies": {}
 }
