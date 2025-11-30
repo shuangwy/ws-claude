@@ -5,54 +5,72 @@ const chalk = require('chalk');
 const prompts = require('prompts');
 
 const { authenticate, ping } = require('../src/auth');
-const { runClaude } = require('../src/runner');
+const { runClaude, installLocalPackage } = require('../src/runner');
 
 (async () => {
-    try {
-        const args = process.argv.slice(2);
+  try {
+    const args = process.argv.slice(2);
 
-        const forceAuth = args.includes('--force-auth');
-        const authUrl = process.env.WS_CLAUDE_AUTH_URL || 'http://localhost:4545';
+    const forceAuth = args.includes('--force-auth');
+    const authUrl = process.env.WS_CLAUDE_AUTH_URL || 'http://localhost:4545';
 
     if (!process.env.WS_CLAUDE_TOKEN || forceAuth) {
-      console.log(chalk.gray(`使用认证服务: ${authUrl}`));
+      console.log(chalk.gray(`Using auth service: ${authUrl}`));
       const alive = await ping({ baseUrl: authUrl });
       if (!alive) {
-        console.log(chalk.yellow('认证服务不可用，继续尝试登录以获得更详细的错误信息'));
+        console.log(chalk.yellow('Auth service unreachable, trying login for detailed error'));
       }
       const username = os.userInfo().username;
 
-            let password = process.env.WS_CLAUDE_PASSWORD;
-            if (!password) {
-                const res = await prompts({
-                    type: 'password',
-                    name: 'password',
-                    message: `为用户 ${username} 输入密码进行认证`,
-                });
-                password = res.password;
-            }
+      let password = process.env.WS_CLAUDE_PASSWORD;
+      if (!password) {
+        const res = await prompts({
+          type: 'password',
+          name: 'password',
+          message: `Enter password for user ${username}`,
+        });
+        password = res.password;
+      }
 
-            if (!password) {
-                console.error(chalk.red('未提供密码，认证流程终止'));
-                process.exit(1);
-            }
-
-            const token = await authenticate({ username, password, baseUrl: authUrl });
-            if (!token) {
-                console.error(chalk.red('认证失败，未获取到令牌'));
-                process.exit(1);
-            }
-
-            process.env.WS_CLAUDE_TOKEN = token;
-      console.log(chalk.green('认证成功，令牌已写入进程环境'));
-        } else {
-            console.log(chalk.gray('检测到现有令牌，跳过认证（使用 --force-auth 重新认证）'));
-        }
-
-        const passThroughArgs = args.filter(a => a !== '--force-auth');
-        await runClaude(passThroughArgs, { env: process.env });
-    } catch (err) {
-        console.error(chalk.red('ws-claude 发生错误：'), err && err.message ? err.message : err);
+      if (!password) {
+        console.error(chalk.red('No password provided, aborting authentication'));
         process.exit(1);
+      }
+
+      const token = await authenticate({ username, password, baseUrl: authUrl });
+      if (!token) {
+        console.error(chalk.red('Authentication failed, no token received'));
+        process.exit(1);
+      }
+
+      process.env.WS_CLAUDE_TOKEN = token;
+      console.log(chalk.green('Authentication succeeded, token set in process env'));
+    } else {
+      console.log(chalk.gray('Existing token detected, skipping auth (use --force-auth to re-auth)'));
     }
+
+    let passThroughArgs = args.filter(a => a !== '--force-auth');
+
+    const installIdx = passThroughArgs.findIndex(a => a === '--install-local');
+    if (installIdx !== -1) {
+      const tgzPath = passThroughArgs[installIdx + 1];
+      passThroughArgs = passThroughArgs.filter((_, i) => i !== installIdx && i !== installIdx + 1);
+      if (!tgzPath) {
+        console.error(chalk.red('Missing local package path: --install-local <path-to-tgz>'));
+        process.exit(1);
+      }
+      try {
+        await installLocalPackage(tgzPath);
+        console.log(chalk.green('Local dependency installed successfully'));
+      } catch (e) {
+        console.error(chalk.red('Failed to install local dependency:'), e.message || e);
+        process.exit(1);
+      }
+    }
+
+    await runClaude(passThroughArgs, { env: process.env });
+  } catch (err) {
+    console.error(chalk.red('ws-claude error:'), err && err.message ? err.message : err);
+    process.exit(1);
+  }
 })();

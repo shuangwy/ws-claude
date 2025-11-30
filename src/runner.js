@@ -12,7 +12,7 @@ function tryRequireClaude() {
 
 async function runClaude(args, { env }) {
   if (process.env.WS_CLAUDE_DRY_RUN === '1') {
-    console.log(chalk.yellow('[DRY RUN] 已通过认证，将调用 Claude Code：'), args.join(' '));
+    console.log(chalk.yellow('[DRY RUN] Authenticated, invoking Claude Code:'), args.join(' '));
     return;
   }
 
@@ -22,22 +22,38 @@ async function runClaude(args, { env }) {
       await Promise.resolve(lib.run({ args, env }));
       return;
     } catch (e) {
-      console.warn(chalk.yellow('库调用失败，改用 npx 调用 CLI：'), e.message || e);
+      console.warn(chalk.yellow('Library call failed, falling back to npx CLI:'), e.message || e);
     }
   }
 
   const isWin = process.platform === 'win32';
   const cmd = isWin ? 'npx.cmd' : 'npx';
-  const npxArgs = ['-y', '@anthropic-ai/claude-code'].concat(args);
+  const version = process.env.WS_CLAUDE_VERSION || '2.0.55';
+  const pkgSpec = `@anthropic-ai/claude-code@${version}`;
+  const npxArgs = ['-y', pkgSpec].concat(args);
   await new Promise((resolve, reject) => {
-    console.log(chalk.gray(`调用命令: ${cmd} ${npxArgs.join(' ')}`));
+    console.log(chalk.gray(`Executing: ${cmd} ${npxArgs.join(' ')}`));
     const child = spawn(cmd, npxArgs, { stdio: 'inherit', env });
     child.on('exit', (code) => {
       if (code === 0) resolve();
-      else reject(new Error(`Claude Code 退出码 ${code}`));
+      else reject(new Error(`Claude Code exit code ${code}`));
     });
     child.on('error', reject);
   });
 }
 
-module.exports = { runClaude };
+function installLocalPackage(tgzPath) {
+  return new Promise((resolve, reject) => {
+    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const args = ['i', '-g', tgzPath];
+    console.log(chalk.gray(`Installing local package: ${npmCmd} ${args.join(' ')}`));
+    const p = spawn(npmCmd, args, { stdio: 'inherit' });
+    p.on('exit', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Install failed with exit code ${code}`));
+    });
+    p.on('error', reject);
+  });
+}
+
+module.exports = { runClaude, installLocalPackage };
