@@ -37,14 +37,17 @@ const { runClaude, installLocalPackage } = require('../src/runner');
         process.exit(1);
       }
 
-      const token = await authenticate({ username, password, baseUrl: authUrl });
-      if (!token) {
+      const authRes = await authenticate({ username, password, baseUrl: authUrl });
+      const sessionToken = typeof authRes === 'string' ? authRes : (authRes && (authRes.sessionToken || authRes.token || authRes.data));
+      if (!sessionToken) {
         console.error(chalk.red('Authentication failed, no token received'));
         process.exit(1);
       }
 
-      process.env.WS_CLAUDE_TOKEN = token;
-      console.log(chalk.green('Authentication succeeded, token set in process env'));
+      process.env.WS_CLAUDE_TOKEN = sessionToken;
+      process.env.X_AUTH_SESSION = sessionToken;
+      process.env.ANTHROPIC_CUSTOM_HEADERS = `bankid: ${username}\nx-auth-session: ${sessionToken}`;
+      console.log(chalk.green('Authentication succeeded, environment prepared'));
     } else {
       console.log(chalk.gray('Existing token detected, skipping auth (use --force-auth to re-auth)'));
     }

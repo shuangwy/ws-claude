@@ -2,8 +2,7 @@ const { spawn } = require('child_process');
 
 function run() {
   const env = Object.assign({}, process.env, {
-    WS_CLAUDE_AUTH_URL: 'http://localhost:4545',
-    WS_CLAUDE_PASSWORD: 'shuangwang',
+    WS_CLAUDE_TOKEN: 'dummy-token',
     WS_CLAUDE_DRY_RUN: '1',
   });
 

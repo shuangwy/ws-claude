@@ -9,7 +9,10 @@ async function authenticate({ username, password, baseUrl }) {
       { timeout: 10000, headers: { 'Content-Type': 'application/json' } }
     );
     if (resp && resp.data) {
-      if (resp.data.token) return resp.data.token;
+      if (resp.data && resp.data.data && resp.data.data.sessionToken) {
+        return { sessionToken: resp.data.data.sessionToken };
+      }
+      if (resp.data.token) return { sessionToken: resp.data.token };
       if (resp.data.data) return resp.data.data;
     }
   } catch (e) {
@@ -41,7 +44,8 @@ async function authenticate({ username, password, baseUrl }) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data || '{}');
-          resolve(parsed.token || parsed.data || null);
+          const st = (parsed && parsed.data && parsed.data.sessionToken) || parsed.token || parsed.data;
+          resolve(st ? { sessionToken: st } : null);
         } catch (_) {
           resolve(null);
         }
