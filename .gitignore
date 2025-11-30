@@ -1,25 +1,5 @@
-node_modules/
-coverage/
-dist/
-build/
-.cache/
-.nyc_output/
-.eslintcache
-tmp/
-
-# environment and secrets
-.env
-.env.*
-*.local
-
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-*.log
-
-# editors and OS files
-.vscode/
-.idea/
+*.tgz
+*.zip
+*.tar
+*.tar.gz
 .DS_Store
