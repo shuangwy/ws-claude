@@ -39,12 +39,13 @@ Execution flow:
 
 ## Environment Variables
 
--   `WS_CLAUDE_AUTH_URL`: Auth service URL, default `http://localhost:4545`
--   `WS_CLAUDE_PASSWORD`: Auth password (prompted if not provided)
--   `WS_CLAUDE_TOKEN`: Existing session token (skips login)
--   `WS_CLAUDE_VERSION`: Claude Code version, default `2.0.55`
--   `WS_CLAUDE_DEBUG_ENV`: When `1`, prints injected headers
--   `WS_CLAUDE_DRY_RUN`: When `1`, performs a dry-run without invoking Claude Code
+- `WS_CLAUDE_AUTH_URL`: Auth service URL, default `http://localhost:4545`
+- `WS_CLAUDE_PASSWORD`: Auth password (prompted if not provided)
+- `WS_CLAUDE_TOKEN`: Existing session token (skips login)
+- `WS_CLAUDE_VERSION`: Claude Code version, default `2.0.55`
+- `WS_CLAUDE_DEBUG_ENV`: When `1`, prints injected headers
+- `WS_CLAUDE_DRY_RUN`: When `1`, performs a dry-run without invoking Claude Code
+- `WS_NPM_REGISTRY`: Custom npm registry. When set, both `npx` and `npm i -g` run with `--registry <url> --strict-ssl=false --force`
 
 ## Examples
 
@@ -56,6 +57,9 @@ ws-claude --force-auth -- --help
 
 # Dry-run (no actual Claude Code invocation)
 WS_CLAUDE_DRY_RUN=1 ws-claude
+
+# Use internal registry for dependency download
+WS_NPM_REGISTRY=https://jfrogbin.sgp.dbs.com:8443/artifactory/api/npm/npm-all ws-claude -- --help
 ```
 
 ## Runtime Requirements
